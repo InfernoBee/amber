@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#1a0a2e">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Amber's Pocket Hero">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="css/main.css">
+  <title>Amber's Pocket Hero</title>
+</head>
+<body>
+  <!-- SCREENS -->
+  <div id="screen-title" class="screen active">
+    <div class="title-bg"></div>
+    <div class="title-content">
+      <div class="title-sparkles"></div>
+      <h1 class="game-title">Amber's<br><span class="title-accent">Pocket Hero</span></h1>
+      <p class="title-sub">A tiny adventure, just for you ❤️</p>
+      <button class="btn btn-primary btn-glow" id="btn-start">Begin Adventure</button>
+      <button class="btn btn-secondary" id="btn-continue" style="display:none">Continue</button>
+      <div class="title-buttons-row">
+        <button class="btn btn-icon" id="btn-settings-title" title="Settings">⚙️</button>
+        <button class="btn btn-icon" id="btn-help-title" title="Help">❓</button>
+        <button class="btn btn-icon" id="btn-hc-title" title="High Contrast">👁️</button>
+      </div>
+      <p class="made-by">Made with ❤️ by Bryan</p>
+    </div>
+  </div>
+
+  <div id="screen-hero-create" class="screen">
+    <div class="screen-header">
+      <h2>Your Hero</h2>
+    </div>
+    <div class="screen-body">
+      <div class="hero-preview-wrap">
+        <canvas id="hero-preview-canvas" width="120" height="120"></canvas>
+      </div>
+      <div class="form-group">
+        <label>Hero Name</label>
+        <input type="text" id="hero-name-input" placeholder="Enter your name…" maxlength="16">
+      </div>
+      <div class="form-group">
+        <label>Class</label>
+        <div class="class-picker" id="class-picker">
+          <button class="class-btn active" data-class="warrior">
+            <span class="class-icon">⚔️</span>
+            <span class="class-name">Warrior</span>
+            <span class="class-desc">High HP & defense</span>
+          </button>
+          <button class="class-btn locked" data-class="mage" id="mage-class-btn">
+            <span class="class-icon">🔮</span>
+            <span class="class-name">Mage</span>
+            <span class="class-desc">Magic power & crits</span>
+            <span class="lock-badge">🔒 Ch.5</span>
+          </button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Palette</label>
+        <div class="palette-picker" id="palette-picker">
+          <button class="palette-btn active" data-palette="0" style="background:linear-gradient(135deg,#a78bfa,#7c3aed)"></button>
+          <button class="palette-btn" data-palette="1" style="background:linear-gradient(135deg,#f472b6,#db2777)"></button>
+          <button class="palette-btn" data-palette="2" style="background:linear-gradient(135deg,#34d399,#059669)"></button>
+          <button class="palette-btn" data-palette="3" style="background:linear-gradient(135deg,#60a5fa,#2563eb)"></button>
+          <button class="palette-btn" data-palette="4" style="background:linear-gradient(135deg,#fbbf24,#d97706)"></button>
+        </div>
+      </div>
+      <button class="btn btn-primary" id="btn-create-hero">Start Journey ✨</button>
+    </div>
+  </div>
+
+  <div id="screen-hub" class="screen">
+    <div class="hub-topbar">
+      <div class="hero-info-mini">
+        <canvas id="hub-hero-avatar" width="40" height="40"></canvas>
+        <div>
+          <div class="hero-name-mini" id="hub-hero-name">Hero</div>
+          <div class="hero-class-mini" id="hub-hero-class">Warrior</div>
+        </div>
+      </div>
+      <div class="hub-stats">
+        <span class="stat-pill">Lv <span id="hub-level">1</span></span>
+        <span class="stat-pill">⭐ <span id="hub-score">0</span></span>
+      </div>
+      <div class="hub-actions">
+        <button class="btn btn-icon" id="btn-settings-hub">⚙️</button>
+      </div>
+    </div>
+    <div class="hub-xp-bar-wrap">
+      <div class="hub-xp-bar" id="hub-xp-bar"></div>
+      <span class="hub-xp-label" id="hub-xp-label">0/100 XP</span>
+    </div>
+    <div class="hub-nav">
+      <button class="hub-tab active" data-tab="adventure">⚔️ Adventure</button>
+      <button class="hub-tab" data-tab="gear">🎒 Gear</button>
+      <button class="hub-tab" data-tab="quests">📜 Quests</button>
+      <button class="hub-tab" data-tab="wardrobe">👗 Wardrobe</button>
+    </div>
+    <div class="hub-content" id="hub-content">
+      <!-- Tabs rendered by JS -->
+    </div>
+  </div>
+
+  <div id="screen-combat" class="screen">
+    <canvas id="combat-canvas"></canvas>
+    <div id="combat-ui">
+      <div id="combat-topbar">
+        <div id="combat-encounter-label">Encounter 1/8</div>
+        <div id="combat-score-label">Score: 0</div>
+        <button class="btn btn-icon" id="btn-combat-quit">✕</button>
+      </div>
+      <div id="combat-hp-bars">
+        <div class="hp-section">
+          <span class="hp-name" id="hero-hp-name">You</span>
+          <div class="hp-bar-wrap"><div class="hp-bar hero-bar" id="hero-hp-bar"></div></div>
+          <span class="hp-num" id="hero-hp-num">100/100</span>
+        </div>
+        <div class="vs-dot">⚡</div>
+        <div class="hp-section enemy">
+          <span class="hp-name" id="enemy-hp-name">Goblin</span>
+          <div class="hp-bar-wrap"><div class="hp-bar enemy-bar" id="enemy-hp-bar"></div></div>
+          <span class="hp-num" id="enemy-hp-num">40/40</span>
+        </div>
+      </div>
+      <div id="combat-timer-track">
+        <div id="combat-sweet-spot"></div>
+        <div id="combat-marker"></div>
+        <div id="combat-tap-hint">TAP!</div>
+      </div>
+      <div id="combat-skills">
+        <button class="skill-btn" id="skill-0" data-skill="0">
+          <span class="skill-icon">🗡️</span>
+          <span class="skill-name">Slash</span>
+          <div class="skill-cd-overlay" id="skill-cd-0"></div>
+        </button>
+        <button class="skill-btn" id="skill-1" data-skill="1">
+          <span class="skill-icon">🛡️</span>
+          <span class="skill-name">Guard</span>
+          <div class="skill-cd-overlay" id="skill-cd-1"></div>
+        </button>
+        <button class="skill-btn" id="skill-2" data-skill="2">
+          <span class="skill-icon">💚</span>
+          <span class="skill-name">Heal</span>
+          <div class="skill-cd-overlay" id="skill-cd-2"></div>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="screen-run-result" class="screen">
+    <div class="result-content">
+      <div class="result-title" id="result-title">Victory! ⭐</div>
+      <div class="result-stats" id="result-stats"></div>
+      <div class="loot-panel" id="loot-panel"></div>
+      <button class="btn btn-primary" id="btn-result-continue">Continue</button>
+    </div>
+  </div>
+
+  <div id="screen-share" class="screen">
+    <div class="screen-header">
+      <button class="btn btn-icon" id="btn-back-share">← Back</button>
+      <h2>Share Card</h2>
+    </div>
+    <div class="screen-body center">
+      <canvas id="share-canvas" width="380" height="520"></canvas>
+      <button class="btn btn-primary" id="btn-save-image">💾 Save Image</button>
+      <button class="btn btn-secondary" id="btn-share-native" style="display:none">📤 Share</button>
+    </div>
+  </div>
+
+  <!-- OVERLAYS / MODALS -->
+  <div id="overlay-settings" class="overlay hidden">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Settings</h3>
+        <button class="btn btn-icon modal-close" data-close="overlay-settings">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="setting-row">
+          <label>Music Volume</label>
+          <input type="range" id="music-vol" min="0" max="1" step="0.05" value="0.4">
+        </div>
+        <div class="setting-row">
+          <label>SFX Volume</label>
+          <input type="range" id="sfx-vol" min="0" max="1" step="0.05" value="0.7">
+        </div>
+        <div class="setting-row">
+          <label>Mute All</label>
+          <label class="toggle"><input type="checkbox" id="mute-all"><span class="toggle-slider"></span></label>
+        </div>
+        <div class="setting-row">
+          <label>Haptics</label>
+          <label class="toggle"><input type="checkbox" id="haptics-toggle" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="setting-row">
+          <label>High Contrast</label>
+          <label class="toggle"><input type="checkbox" id="hc-toggle"><span class="toggle-slider"></span></label>
+        </div>
+        <div class="setting-row">
+          <label>Reset Save</label>
+          <button class="btn btn-danger" id="btn-reset-save">Reset All Data</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="overlay-help" class="overlay hidden">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>How to Play ❓</h3>
+        <button class="btn btn-icon modal-close" data-close="overlay-help">✕</button>
+      </div>
+      <div class="modal-body help-body">
+        <h4>⚔️ Combat</h4>
+        <p>Tap the <strong>timing bar</strong> when the marker is in the glowing sweet spot for a Critical Hit! Missing still deals normal damage.</p>
+        <h4>🌟 Skills</h4>
+        <p><strong>Slash Arc</strong> – Powerful strike, 6s cooldown.<br>
+           <strong>Shield Guard</strong> – Reduces next hit by 50%, 10s cooldown.<br>
+           <strong>Heal</strong> – Restore 20% HP, 15s cooldown.</p>
+        <h4>🎒 Gear</h4>
+        <p>Equip Weapon, Armor, and Ring to boost your stats. Gear comes in Common → Rare → Epic → Legendary rarities.</p>
+        <h4>📜 Quests</h4>
+        <p>Complete <strong>Story Chapters</strong> for permanent rewards and unlock new classes. Check <strong>Daily Quests</strong> every day for bonus XP!</p>
+        <h4>👗 Wardrobe</h4>
+        <p>Unlock cosmetic skins and accessories through quests and lucky drops.</p>
+        <h4>💾 Save</h4>
+        <p>Progress is saved automatically after every run.</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="overlay-levelup" class="overlay hidden">
+    <div class="modal modal-sm glow-border">
+      <div class="modal-header">
+        <h3>Level Up! 🎉</h3>
+      </div>
+      <div class="modal-body center">
+        <div class="levelup-num" id="levelup-num">2</div>
+        <div class="levelup-stats" id="levelup-stats"></div>
+        <button class="btn btn-primary" id="btn-levelup-ok">Awesome!</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+  <div id="particle-container"></div>
+
+  <script src="js/audio.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/loot.js"></script>
+  <script src="js/quests.js"></script>
+  <script src="js/combat.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/share.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

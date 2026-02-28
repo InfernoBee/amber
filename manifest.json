@@ -1,0 +1,22 @@
+{
+  "name": "Amber's Pocket Hero",
+  "short_name": "Pocket Hero",
+  "description": "A tiny RPG adventure, made with love.",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#0f0620",
+  "theme_color": "#1a0a2e",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
