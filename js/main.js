@@ -215,12 +215,32 @@ const Main = (() => {
       }, { passive: false });
     });
 
+    on('btn-combat-settings', 'click', () => {
+      Audio.playMenuClick();
+      // Allow settings anytime; pause combat while overlay is open
+      Combat.pause?.();
+      UI.showOverlay('overlay-settings');
+    });
+
     on('btn-combat-quit', 'click', () => {
       if (confirm('Quit this run?')) {
         Combat.stop();
         Audio.startMusic();
         goToHub();
       }
+    });
+
+    // Overlay close buttons (works for settings/help/etc.)
+    document.querySelectorAll('[data-close]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        Audio.playMenuClick();
+        const id = btn.getAttribute('data-close');
+        if (id) UI.hideOverlay(id);
+        // Resume combat if we paused it for settings
+        if (document.getElementById('screen-combat')?.classList.contains('active')) {
+          Combat.resume?.();
+        }
+      });
     });
 
     // Share

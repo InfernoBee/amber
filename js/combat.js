@@ -2,6 +2,7 @@
 const Combat = (() => {
   let canvas, ctx;
   let running = false;
+  let paused = false;
   let raf = null;
   let onComplete = null;
 
@@ -343,6 +344,12 @@ const Combat = (() => {
 
   function loop(now) {
     if (!running) return;
+    if (paused) {
+      // Keep rendering a static frame while paused, but do not advance simulation
+      render(0);
+      raf = requestAnimationFrame(loop);
+      return;
+    }
     const rawDt = Math.min((now - lastTime) / 1000, 0.1);
     lastTime = now;
     if (hitStopTimer > 0) {
@@ -935,10 +942,24 @@ const Combat = (() => {
     }, 400);
   }
 
+  function pause() {
+    if (!running) return;
+    paused = true;
+  }
+
+  function resume() {
+    if (!running) return;
+    if (!paused) return;
+    paused = false;
+    lastTime = performance.now();
+    if (!raf) raf = requestAnimationFrame(loop);
+  }
+
   function stop() {
     running = false;
+    paused = false;
     if (raf) { cancelAnimationFrame(raf); raf = null; }
   }
 
-  return { init, startRun, onTap, useSkill, stop, resize, onGuardPress, onGuardRelease };
+  return { init, startRun, onTap, useSkill, pause, resume, stop, resize, onGuardPress, onGuardRelease };
 })();
