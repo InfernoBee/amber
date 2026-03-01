@@ -487,11 +487,13 @@ const UI = (() => {
     const ma = document.getElementById('mute-all');
     const ha = document.getElementById('haptics-toggle');
     const hc = document.getElementById('hc-toggle');
+    const am = document.getElementById('assist-toggle');
     if (mv) mv.value = s.musicVol;
     if (sv) sv.value = s.sfxVol;
     if (ma) ma.checked = s.muted;
     if (ha) ha.checked = s.haptics;
     if (hc) hc.checked = s.highContrast;
+    if (am) am.checked = s.assistMode || false;
     applyHighContrast(s.highContrast);
   }
 

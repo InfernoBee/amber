@@ -154,6 +154,11 @@ const Main = (() => {
       State.save();
       UI.applyHighContrast(v);
     });
+    on('assist-toggle', 'change', e => {
+      State.get().settings.assistMode = e.target.checked;
+      State.save();
+      UI.toast(e.target.checked ? '🛡️ Assist Mode ON – wider windows!' : 'Assist Mode OFF');
+    });
     on('btn-reset-save', 'click', () => {
       if (confirm('Are you sure? All progress will be lost!')) {
         State.reset();

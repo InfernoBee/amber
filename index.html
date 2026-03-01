@@ -112,6 +112,8 @@
         <div id="combat-score-label">Score: 0</div>
         <button class="btn btn-icon" id="btn-combat-quit">✕</button>
       </div>
+
+      <!-- HP bars + status icons -->
       <div id="combat-hp-bars">
         <div class="hp-section">
           <span class="hp-name" id="hero-hp-name">You</span>
@@ -121,29 +123,62 @@
         <div class="vs-dot">⚡</div>
         <div class="hp-section enemy">
           <span class="hp-name" id="enemy-hp-name">Goblin</span>
-          <div class="hp-bar-wrap"><div class="hp-bar enemy-bar" id="enemy-hp-bar"></div></div>
+          <div class="hp-bar-wrap">
+            <div class="hp-bar enemy-bar" id="enemy-hp-bar"></div>
+            <!-- Enemy windup telegraph bar -->
+            <div id="enemy-windup-wrap"><div id="enemy-windup-bar"></div></div>
+          </div>
           <span class="hp-num" id="enemy-hp-num">40/40</span>
         </div>
       </div>
+
+      <!-- Status effects row -->
+      <div id="status-row">
+        <div id="hero-status" class="status-effects"></div>
+        <div id="enemy-status" class="status-effects" style="margin-left:auto"></div>
+      </div>
+
+      <!-- Energy + Overheat + Combo row -->
+      <div id="combat-resources">
+        <div id="energy-wrap">
+          <div id="energy-bar-bg"><div id="energy-bar-fill"></div></div>
+          <span id="energy-label">⚡30</span>
+        </div>
+        <div id="combo-wrap">
+          <div id="combo-ring" style="display:none">●</div>
+          <span id="combo-count" class="combo-count"></span>
+        </div>
+        <div id="overheat-bar">
+          <div id="overheat-fill"></div>
+          <span id="overheat-label">🔥</span>
+        </div>
+      </div>
+
+      <!-- Timing bar -->
       <div id="combat-timer-track">
         <div id="combat-sweet-spot"></div>
         <div id="combat-marker"></div>
         <div id="combat-tap-hint">TAP!</div>
       </div>
+
+      <!-- Skills -->
       <div id="combat-skills">
         <button class="skill-btn" id="skill-0" data-skill="0">
           <span class="skill-icon">🗡️</span>
           <span class="skill-name">Slash</span>
+          <span class="skill-cost">20⚡</span>
           <div class="skill-cd-overlay" id="skill-cd-0"></div>
         </button>
         <button class="skill-btn" id="skill-1" data-skill="1">
           <span class="skill-icon">🛡️</span>
           <span class="skill-name">Guard</span>
+          <span class="skill-cost">Hold</span>
           <div class="skill-cd-overlay" id="skill-cd-1"></div>
         </button>
         <button class="skill-btn" id="skill-2" data-skill="2">
           <span class="skill-icon">💚</span>
           <span class="skill-name">Heal</span>
+          <span class="skill-cost">30⚡</span>
           <div class="skill-cd-overlay" id="skill-cd-2"></div>
         </button>
       </div>
@@ -198,6 +233,10 @@
         <div class="setting-row">
           <label>High Contrast</label>
           <label class="toggle"><input type="checkbox" id="hc-toggle"><span class="toggle-slider"></span></label>
+        </div>
+        <div class="setting-row">
+          <label>Assist Mode <small style="color:var(--text3)">(wider parry/sweet spot)</small></label>
+          <label class="toggle"><input type="checkbox" id="assist-toggle"><span class="toggle-slider"></span></label>
         </div>
         <div class="setting-row">
           <label>Reset Save</label>

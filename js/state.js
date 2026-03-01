@@ -42,6 +42,7 @@ const State = (() => {
       muted: false,
       haptics: true,
       highContrast: false,
+      assistMode: false,
     },
     created: Date.now(),
   });
