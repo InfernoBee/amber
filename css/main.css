@@ -409,6 +409,15 @@ html, body {
   cursor: pointer; pointer-events: all;
   display: flex; align-items: center;
 }
+#combat-perfect-spot {
+  position: absolute; top: 10px; bottom: 10px;
+  background: rgba(251,191,36,0.45);
+  border: 2px solid #fbbf24;
+  border-radius: 3px;
+  box-shadow: 0 0 10px rgba(251,191,36,0.7), 0 0 4px #fff inset;
+  pointer-events: none;
+  transition: left 0.1s, width 0.1s;
+}
 #combat-sweet-spot {
   position: absolute; top: 8px; bottom: 8px;
   background: rgba(52,211,153,0.25);

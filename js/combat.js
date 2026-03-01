@@ -8,9 +8,13 @@ const Combat = (() => {
   // Timing bar
   let markerPos = 0;
   let markerDir = 1;
-  let markerSpeed = 0.5;
+  // Full cycle (0→1→0 = 2 units) in ~0.95s → base speed ≈ 2/0.95 ≈ 2.1 (dt-based, framerate-independent)
+  let markerSpeed = 2.1;
   let sweetSpotLeft = 0.35;
-  let sweetSpotWidth = 0.22;
+  // Sweet spot ≈ 10% of bar; perfect sub-window ≈ 6% centred inside it
+  let sweetSpotWidth = 0.10;
+  let perfectSpotOffset = 0.02; // left offset into sweet spot where perfect zone starts
+  let perfectSpotWidth = 0.06;
   let tapCooldown = 0;
 
   // Combat state
@@ -290,7 +294,8 @@ const Combat = (() => {
     heroHp = stats.maxHp; heroMaxHp = stats.maxHp;
     heroAtk = stats.atk; heroDef = stats.def; heroSpd = stats.spd;
     markerPos = 0; markerDir = 1;
-    markerSpeed = 0.38 + heroSpd * 0.012;
+    // Speed scales only slightly with hero spd so it stays near the 1.2s cycle target
+    markerSpeed = 1.667 + heroSpd * 0.008;
 
     setupEncounter();
     updateUI(); updateEnergyBar(); updateComboMeter(); updateStatusDisplay();
@@ -311,9 +316,15 @@ const Combat = (() => {
     enrageActive = false;
     enemyStatusEffects = []; heroStatusEffects = [];
 
-    sweetSpotLeft = 0.2 + Math.random() * 0.35;
-    const bw = Math.max(0.12, 0.30 - currentEncounter * 0.015 - lvl * 0.005);
-    sweetSpotWidth = assistMode ? bw * 1.5 : bw;
+    sweetSpotLeft = 0.2 + Math.random() * 0.55;  // keep it reachable anywhere on bar
+    // Crit window ≈ 10%, shrinks very slightly with encounter/level; assist widens it
+    const bw = Math.max(0.05, 0.075 - currentEncounter * 0.004 - lvl * 0.001);
+    sweetSpotWidth = assistMode ? bw * 1.6 : bw;
+    // Perfect sub-window (tight) centred inside the sweet spot
+    perfectSpotWidth = assistMode ? 0.06 : 0.035;
+    perfectSpotOffset = (sweetSpotWidth - perfectSpotWidth) / 2;
+    // Clamp so sweet spot + width stays within [0,1]
+    sweetSpotLeft = Math.min(sweetSpotLeft, 1 - sweetSpotWidth - 0.02);
 
     const baseInterval = Math.max(1.8, 3.8 - currentEncounter * 0.25);
     scheduleNextAttack(assistMode ? baseInterval * 1.3 : baseInterval);
@@ -582,7 +593,7 @@ const Combat = (() => {
   }
 
   // ── COMBAT ACTIONS ──
-  function doHeroAttack(isCrit) {
+  function doHeroAttack(isCrit, isPerfect) {
     if (!currentEnemy || phase !== 'combat') return;
     if (overheatCooldown > 0) {
       spawnFloatingText(getHeroX(), getHeroY() - 30, '🔥 Overheated!', '#f97316', 17);
@@ -598,20 +609,25 @@ const Combat = (() => {
     }
     updateOverheatBar();
 
-    const critChance = isCrit ? 1.0 : (0.05 + focusStacks * 0.08);
-    const actualCrit = isCrit || Math.random() < critChance;
+    // isPerfect → guaranteed crit + focus stack + extra energy
+    // isCrit (sweet spot but not perfect) → crit
+    // miss → small focus-stack chance to still crit
+    const focusBonus = focusStacks * 0.06;
+    const actualCrit = isPerfect || isCrit || Math.random() < (0.04 + focusBonus);
 
     let dmg = heroAtk + (actualCrit ? heroAtk * 0.8 : 0);
     dmg = Math.round(dmg * (0.85 + Math.random() * 0.3));
     if (actualCrit) {
-      dmg = Math.round(dmg * (1.5 + comboCount * 0.02));
+      // Perfect crits deal a further 25% bonus on top
+      const perfectMult = isPerfect ? 1.25 : 1.0;
+      dmg = Math.round(dmg * (1.5 + comboCount * 0.02) * perfectMult);
       crits++;
       critPoseTimer = 0.5;
-      hitStopTimer = 0.06;
+      hitStopTimer = isPerfect ? 0.09 : 0.06;
       shake(true);
       Audio.playHit(true);
-      spawnSlashArc(getEnemyX(), getEnemyY(), '#fbbf24', 55);
-      spawnParticle(getEnemyX(), getEnemyY(), '#fbbf24', 12, { shape:'star' });
+      spawnSlashArc(getEnemyX(), getEnemyY(), isPerfect ? '#fff' : '#fbbf24', isPerfect ? 65 : 55);
+      spawnParticle(getEnemyX(), getEnemyY(), isPerfect ? '#fff' : '#fbbf24', isPerfect ? 16 : 12, { shape:'star' });
       spawnParticle(getEnemyX(), getEnemyY(), '#fff', 5);
     } else {
       Audio.playHit(false);
@@ -619,15 +635,21 @@ const Combat = (() => {
       spawnParticle(getEnemyX(), getEnemyY(), '#fff', 4);
     }
 
-    score += actualCrit ? 15 : 8;
+    score += actualCrit ? (isPerfect ? 20 : 15) : 8;
     enemyHp = Math.max(0, enemyHp - dmg);
-    spawnFloatingText(getEnemyX(), getEnemyY() - 30, actualCrit ? `💥 ${dmg}!` : `${dmg}`, actualCrit ? '#fbbf24' : '#fff', actualCrit ? 30 : 22);
+
+    const hitLabel = isPerfect ? `✨ ${dmg}!!` : actualCrit ? `💥 ${dmg}!` : `${dmg}`;
+    const hitColor = isPerfect ? '#fff' : actualCrit ? '#fbbf24' : '#fff';
+    const hitSize  = isPerfect ? 34 : actualCrit ? 30 : 22;
+    spawnFloatingText(getEnemyX(), getEnemyY() - 30, hitLabel, hitColor, hitSize);
 
     comboCount++; comboTimer = COMBO_DECAY; updateComboMeter();
 
-    if (isCrit && focusStacks < MAX_FOCUS) {
-      focusStacks = Math.min(MAX_FOCUS, focusStacks + 1);
-      energy = Math.min(MAX_ENERGY, energy + 10);
+    // Focus stacks on perfect timing only (sweet spot = 1 stack, perfect = 2)
+    const stackGain = isPerfect ? 2 : isCrit ? 1 : 0;
+    if (stackGain > 0 && focusStacks < MAX_FOCUS) {
+      focusStacks = Math.min(MAX_FOCUS, focusStacks + stackGain);
+      energy = Math.min(MAX_ENERGY, energy + (isPerfect ? 18 : 10));
       spawnFloatingText(getHeroX(), getHeroY() - 50, `✨ Focus x${focusStacks}`, '#fbbf24', 15);
     }
     updateEnergyBar();
@@ -766,9 +788,13 @@ const Combat = (() => {
     if (phase !== 'combat') return;
     if (tapCooldown > 0) return;
     const inSweet = markerPos >= sweetSpotLeft && markerPos <= sweetSpotLeft + sweetSpotWidth;
-    doHeroAttack(inSweet);
+    const inPerfect = inSweet &&
+      markerPos >= sweetSpotLeft + perfectSpotOffset &&
+      markerPos <= sweetSpotLeft + perfectSpotOffset + perfectSpotWidth;
+    doHeroAttack(inSweet, inPerfect);
     Audio.resume();
-    if (inSweet && navigator.vibrate && State.get().settings.haptics) navigator.vibrate(20);
+    if (inPerfect && navigator.vibrate && State.get().settings.haptics) navigator.vibrate([10, 5, 20]);
+    else if (inSweet && navigator.vibrate && State.get().settings.haptics) navigator.vibrate(20);
   }
 
   function onGuardPress() { if (phase === 'combat') parryActive = true; }
@@ -791,8 +817,13 @@ const Combat = (() => {
     const W = track.offsetWidth;
     const marker = document.getElementById('combat-marker');
     const sweet = document.getElementById('combat-sweet-spot');
+    const perfect = document.getElementById('combat-perfect-spot');
     if (marker) marker.style.left = `${markerPos * (W - 6)}px`;
     if (sweet) { sweet.style.left = `${sweetSpotLeft * W}px`; sweet.style.width = `${sweetSpotWidth * W}px`; }
+    if (perfect) {
+      perfect.style.left = `${(sweetSpotLeft + perfectSpotOffset) * W}px`;
+      perfect.style.width = `${perfectSpotWidth * W}px`;
+    }
   }
 
   function updateWindupIndicator() {
